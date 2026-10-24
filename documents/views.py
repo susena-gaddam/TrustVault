@@ -1,7 +1,11 @@
 
-from django.shortcuts import render, redirect
+from pathlib import Path
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import FileResponse
+
 from .models import Document
 
 
@@ -37,7 +41,24 @@ def upload_document(request):
             file=uploaded_file,
             owner=request.user,
         )
+
         messages.success(request, "Document uploaded successfully.")
         return redirect("home")
 
     return render(request, "documents/upload.html")
+
+
+@login_required
+def download_document(request, document_id):
+    document = get_object_or_404(
+        Document,
+        pk=document_id,
+        owner=request.user,
+    )
+
+    response = FileResponse(
+        document.file.open("rb"),
+        as_attachment=True,
+        filename=Path(document.file.name).name,
+    )
+    return response
