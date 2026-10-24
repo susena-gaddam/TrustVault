@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Document
+from .models import Document, AuditLog
 
 
 User = get_user_model()
@@ -91,3 +91,32 @@ class DocumentAccessTests(TestCase):
         self.assertFalse(
             Document.objects.filter(title="Test file").exists()
         )
+    
+    def test_successful_upload_creates_audit_log(self):
+        self.client.force_login(self.owner)
+
+        test_file = SimpleUploadedFile(
+            "report.txt",
+            b"test document content",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            reverse("upload"),
+            {
+                "title": "Upload audit test",
+                "description": "Testing upload audit log",
+                "category": "test",
+                "file": test_file,
+            },
+        )
+
+        self.assertRedirects(response, reverse("home"))
+        self.assertTrue(
+            AuditLog.objects.filter(
+                actor=self.owner,
+                action="document_upload",
+                details__title="Upload audit test",
+            ).exists()
+        )
+    

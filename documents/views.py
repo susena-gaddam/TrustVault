@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import FileResponse
 
-from .models import Document
+from .models import Document, AuditLog
 
 
 @login_required
@@ -25,16 +25,19 @@ def upload_document(request):
         description = request.POST.get("description", "").strip()
         category = request.POST.get("category", "").strip()
         uploaded_file = request.FILES.get("file")
-        
+
         allowed_extensions = {".pdf", ".txt", ".doc", ".docx"}
 
-        if uploaded_file and Path(uploaded_file.name).suffix.lower() not in allowed_extensions:
+        if (
+            uploaded_file
+            and Path(uploaded_file.name).suffix.lower()
+            not in allowed_extensions
+        ):
             messages.error(
                 request,
                 "Only PDF, TXT, DOC, and DOCX files are allowed.",
             )
             return redirect("upload")
-
 
         if not title or not uploaded_file:
             messages.error(request, "Title and file are required.")
@@ -44,12 +47,19 @@ def upload_document(request):
             messages.error(request, "File must be 5 MB or smaller.")
             return redirect("upload")
 
-        Document.objects.create(
+        document = Document.objects.create(
             title=title,
             description=description,
             category=category,
             file=uploaded_file,
             owner=request.user,
+        )
+
+        AuditLog.objects.create(
+            actor=request.user,
+            document=document,
+            action="document_upload",
+            details={"title": document.title},
         )
 
         messages.success(request, "Document uploaded successfully.")
