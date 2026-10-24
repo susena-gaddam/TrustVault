@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustVault | My Documents</title>
+</head>
+<body>
+    <h1>TrustVault</h1>
+    <p>Your private document space</p>
+
+    <p>Welcome, {{ request.user.username }}!</p>
+
+    <a href="{% url 'upload' %}">Upload a document</a>
+
+    <h2>My Documents</h2>
+
+    {% for document in documents %}
+        <article>
+            <h3>{{ document.title }}</h3>
+            <p>{{ document.description }}</p>
+            <p>Category: {{ document.category|default:"Uncategorized" }}</p>
+            <p>Uploaded: {{ document.created_at }}</p>
+        </article>
+    {% empty %}
+        <p>You haven't uploaded any documents yet.</p>
+    {% endfor %}
+
+    <p><a href="{% url 'logout' %}">Log out</a></p>
+</body>
+</html> 
