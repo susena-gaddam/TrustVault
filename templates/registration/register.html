@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create TrustVault Account</title>
+</head>
+<body>
+    <h1>Create your TrustVault account</h1>
+    <p>Register to securely store and manage your documents.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create account</button>
+    </form>
+
+    <p><a href="{% url 'login' %}">Already have an account? Log in</a></p>
+</body>
+</html>
