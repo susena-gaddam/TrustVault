@@ -25,6 +25,16 @@ def upload_document(request):
         description = request.POST.get("description", "").strip()
         category = request.POST.get("category", "").strip()
         uploaded_file = request.FILES.get("file")
+        
+        allowed_extensions = {".pdf", ".txt", ".doc", ".docx"}
+
+        if uploaded_file and Path(uploaded_file.name).suffix.lower() not in allowed_extensions:
+            messages.error(
+                request,
+                "Only PDF, TXT, DOC, and DOCX files are allowed.",
+            )
+            return redirect("upload")
+
 
         if not title or not uploaded_file:
             messages.error(request, "Title and file are required.")

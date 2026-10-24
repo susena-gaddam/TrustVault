@@ -67,3 +67,27 @@ class DocumentAccessTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Private document")
+
+    def test_upload_rejects_unsupported_file_extension(self):
+        self.client.force_login(self.owner)
+
+        test_file = SimpleUploadedFile(
+            "malware.exe",
+            b"fake executable content",
+            content_type="application/octet-stream",
+        )
+
+        response = self.client.post(
+            reverse("upload"),
+            {
+                "title": "Test file",
+                "description": "",
+                "category": "",
+                "file": test_file,
+            },
+        )
+
+        self.assertRedirects(response, reverse("upload"))
+        self.assertFalse(
+            Document.objects.filter(title="Test file").exists()
+        )
